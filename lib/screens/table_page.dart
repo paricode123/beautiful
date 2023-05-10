@@ -1,66 +1,52 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tweelve/main.dart';
 
-class User {
-  final String name;
-  int price;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
 
-  User(this.name, this.price);
-}
-
-class SignUpWidget extends StatefulWidget {
   @override
-  _SignUpWidgetState createState() => _SignUpWidgetState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _SignUpWidgetState extends State<SignUpWidget> {
-  List<User> _users = [];
-  int _signUpCount = 0;
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  List<Map<String, String>> nameList = [];
+  List<String> loggedInUsers = [];
 
-  void _handleSignUp(String name) {
-    setState(() {
-      _signUpCount++;
-      _users.insert(0, User(name, 1000));
-      if (_signUpCount % 6 == 0) {
-        _showApplyPopup();
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _loadName();
   }
 
-  void _showApplyPopup() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          content: Text('Double the Balance ?'),
-          actions: [
-            Center(
-              child: TextButton(
-                child: Text('Apply'),
-                onPressed: () {
-                  _doubleBalance();
-                  Navigator.of(context).pop();
-                },
-              ),
-            ),
-          ],
-        );
-      },
-    );
+  void _loadName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? name = prefs.getString('name');
+    if (name != null) {
+      setState(() {
+        nameList.add({'name': name, 'serialNumber': '${nameList.length + 1}'});
+        loggedInUsers.add(name);
+        _tabController = TabController(length: loggedInUsers.length, vsync: this);
+      });
+    }
   }
 
-  void _doubleBalance() {
-    int doubledPrice = _users[0].price * 2;
-    setState(() {
-      _users[0].price = doubledPrice;
-      _users.add(_users.removeAt(0));
-    });
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: NavDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.orange.shade500,
+        backgroundColor: Colors.orangeAccent.shade200,
+        elevation: 0,
       ),
       body: Container(
         width: double.infinity,
@@ -83,7 +69,7 @@ class _SignUpWidgetState extends State<SignUpWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Container(
-                    padding: EdgeInsets.all(20.0),
+                    padding: EdgeInsets.all(15.0),
                     child: Row(
                       children: [
                         Container(
@@ -95,18 +81,20 @@ class _SignUpWidgetState extends State<SignUpWidget> {
                             borderRadius: BorderRadius.circular(50.0),
                           ),
                           child: CircleAvatar(
-                            radius: 40.0,
+                            radius: 30.0,
                             backgroundImage:
-                                AssetImage('assets/images/avatar2.png'),
+                            AssetImage('assets/images/avatar2.png'),
                           ),
                         ),
                         SizedBox(width: 33.0),
                         Expanded(
-                          child: Text('My ID',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),),
+                          child: Text(
+                            'My ID',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -127,30 +115,71 @@ class _SignUpWidgetState extends State<SignUpWidget> {
                 child: Padding(
                   padding: EdgeInsets.all(10),
                   child: SingleChildScrollView(
-                    child: DataTable(
-                      columns: [
-                        DataColumn(label: Text('SI No.',style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),),),
-                        DataColumn(label: Text('Name',style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ))),
-                        DataColumn(label: Text('Price',style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ))),
-                      ],
-                      rows: _users.map((user) {
-                        int index = _users.indexOf(user);
-                        return DataRow(cells: [
-                          DataCell(Text('${_users.length - index}')),
-                          DataCell(Text(user.name)),
-                          DataCell(Text('${user.price}')),
-                        ]);
-                      }).toList(),
-                    ),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 550,
+                            child: Column(
+                              children: [
+                                TabBar(
+                                  controller: _tabController,
+                                  tabs: [
+                                    Tab(text: '1st List'),
+                                    Tab(text: '2nd List'),
+                                    Tab(text: '3rd List'),
+                                  ],
+                                ),
+                                Expanded(
+                                  child: TabBarView(
+                                    controller: _tabController,
+                                    children: [
+                                      ListView(
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text('SI No.',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
+                                                Text('Name',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
+                                                Text('Price / Table',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
+                                              ],
+                                            ),
+                                          ),
+                                          Divider(
+                                            color: Colors.grey,
+                                            height: 1,
+                                            thickness: 1,
+                                          ),
+                                          SizedBox(height: 20,),
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            physics: NeverScrollableScrollPhysics(),
+                                            itemCount: nameList.length,
+                                            itemBuilder: (context, index) {
+                                              return Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 35.0),
+                                                child: Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: [
+                                                    Text('${nameList[index]['serialNumber']}.', style: TextStyle(fontSize: 18,),),
+                                                    Text(nameList[index]['name']!, style: TextStyle(fontSize: 18,),),
+                                                    Text('1000', style: TextStyle(fontSize: 18,),),
+                                                  ],
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                   ),
                 ),
               ),
@@ -158,13 +187,21 @@ class _SignUpWidgetState extends State<SignUpWidget> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.orange,
-        child: Icon(Icons.add),
-        onPressed: () {
-          _handleSignUp('user${_signUpCount + 1}');
-        },
-      ),
     );
   }
 }
+
+// floatingActionButton: FloatingActionButton(
+// onPressed: () {
+// Navigator.push(
+// context,
+// MaterialPageRoute(builder: (context) => MyRewards()),
+// );
+// },
+// child: Icon(Icons.card_giftcard),
+// backgroundColor: Colors.orangeAccent.shade400,
+// shape: RoundedRectangleBorder(
+// borderRadius: BorderRadius.circular(30.0),
+// ),
+// ),
+// floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

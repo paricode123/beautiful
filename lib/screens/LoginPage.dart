@@ -1,9 +1,74 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:tweelve/screens/creat_account.dart';
 import 'package:tweelve/screens/payment.dart';
 import 'package:tweelve/screens/forgot_password.dart';
 
-class LoginPage extends StatelessWidget {
+import '../test.dart';
+
+class HomePage extends StatefulWidget {
+  final VoidCallback onClickedSignUp;
+  const HomePage({Key? key, required this.onClickedSignUp}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  Future<FirebaseApp> _initializeFirebase() async {
+    FirebaseApp firebaseApp = await Firebase.initializeApp();
+    return firebaseApp;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: FutureBuilder(
+        future: _initializeFirebase(),
+        builder: (context, snapshot){
+          if (snapshot.connectionState == ConnectionState.done){
+            return AuthPage();
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+final VoidCallback onClickedSignUp;
+
+const LoginPage({
+  Key? key,
+  required this.onClickedSignUp,
+}) : super(key: key);
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
+
+  Future<User?> _loginUsingEmailPassword(
+      {required String email, required String password, required BuildContext context}) async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: email, password: password);
+      User? user = userCredential.user;
+      return user;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "user-not-found") {
+        print("No User found for that email");
+      }
+      return null;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,11 +76,6 @@ class LoginPage extends StatelessWidget {
         width: double.infinity,
         decoration: BoxDecoration(
           color: Color(0xFFFA5463),
-          // gradient: LinearGradient(begin: Alignment.topCenter, colors: [
-          //   Colors.red.shade500,
-          //   Colors.red.shade300,
-          //   Colors.red.shade400,
-          // ]),
         ),
         child: Column(
           children: <Widget>[
@@ -32,8 +92,8 @@ class LoginPage extends StatelessWidget {
                   ),
                   Center(
                     child: Text(
-                      "SignIn / SignUp",
-                      style: TextStyle(color: Colors.white, fontSize: 40),
+                      "SignIn ",
+                      style: TextStyle(color: Colors.white, fontSize: 35),
                     ),
                   ),
                   SizedBox(
@@ -81,6 +141,7 @@ class LoginPage extends StatelessWidget {
                                         BorderSide(color: Colors.grey.shade200)),
                                   ),
                                   child: TextField(
+                                    controller: _emailController,
                                     decoration: InputDecoration(
                                         hintText: "Enter your email",
                                         hintStyle: TextStyle(color: Colors.grey),
@@ -97,6 +158,8 @@ class LoginPage extends StatelessWidget {
                                           bottom: BorderSide(
                                               color: Colors.grey.shade200))),
                                   child: TextField(
+                                    controller: _passwordController,
+                                    obscureText: true,
                                     decoration: InputDecoration(
                                         hintText: "Enter your password",
                                         hintStyle: TextStyle(color: Colors.grey),
@@ -112,13 +175,8 @@ class LoginPage extends StatelessWidget {
                           Row(
                             children: [
                               GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ForgotPassword()),
-                                  );
-                                },
+                                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => ForgotPassword())),
                                 child: Text(
                                   "Forgot Password ?",
                                   style: TextStyle(color: Colors.blue, fontSize: 15),
@@ -135,13 +193,7 @@ class LoginPage extends StatelessWidget {
                                 width: 5,
                               ),
                               GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => CreatAccount()),
-                                  );
-                                },
+                                onTap: widget.onClickedSignUp,
                                 child: Text(
                                   "Create Account",
                                   style: TextStyle(color: Colors.blue, fontSize: 15),
@@ -153,11 +205,13 @@ class LoginPage extends StatelessWidget {
                             height: 60,
                           ),
                           GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => MyAppState()),
-                              );
+                            onTap: () async {
+                              User? user = await _loginUsingEmailPassword(email:_emailController.text, password: _passwordController.text,context: context );
+                              print(user);
+                              if(user != null) {
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(builder: (context) => MyAppState()));
+                              }
                             },
                             child: Container(
                               height: 50,

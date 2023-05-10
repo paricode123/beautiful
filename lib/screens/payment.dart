@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tweelve/screens/home.dart';
+import 'package:tweelve/screens/table_page.dart';
 
 class MyAppState extends StatefulWidget {
   const MyAppState({Key? key}) : super(key: key);
@@ -189,7 +189,7 @@ class _MyAppStateState extends State<MyAppState> {
                                 onTap: () {
                                   Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (context) => HomePage()),
+                                    MaterialPageRoute(builder: (context) => MyHomePage()),
                                   );
                                 },
                                 child: Container(

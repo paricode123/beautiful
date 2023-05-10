@@ -1,20 +1,20 @@
+import 'package:email_validator/email_validator.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:tweelve/screens/LoginPage.dart';
 
 class ForgotPassword extends StatefulWidget {
-  const ForgotPassword({Key? key}) : super(key: key);
   @override
   State<ForgotPassword> createState() => _ForgotPasswordState();
 }
 class _ForgotPasswordState extends State<ForgotPassword> {
-  final List<TextEditingController> _controllers = List.generate(
-    4,
-        (_) => TextEditingController(),
-  );
+  final formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+
 
   @override
   void dispose() {
-    _controllers.forEach((controller) => controller.dispose());
+    emailController.dispose();
     super.dispose();
   }
   bool _showOTPSection = false;
@@ -26,7 +26,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       } else if (context != null) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => LoginPage(),
+            builder: (context) => LoginPage(onClickedSignUp: () {  },),
           ),
         );
       }
@@ -96,33 +96,27 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                     bottom: BorderSide(color: Colors.grey.shade700),
                                   ),
                                 ),
-                                child: TextField(
+                                child: TextFormField(
+                                  controller: emailController,
                                   decoration: InputDecoration(
-                                    hintText: "Enter your email",
-                                    hintStyle: TextStyle(color: Colors.grey.shade400),
-                                    border: InputBorder.none,
+                                    labelText: 'Email',
                                   ),
+                                  autovalidateMode: AutovalidateMode
+                                      .onUserInteraction,
+                                  validator: (email) =>
+                                  email != null &&
+                                      !EmailValidator.validate(email)
+                                      ? 'Enter a valid email'
+                                      : null,
                                 ),
                               ),
-
-                              SizedBox(height: 60),
-                              if (_showOTPSection)
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    _buildOtpInputField(_controllers[0]),
-                                    _buildOtpInputField(_controllers[1]),
-                                    _buildOtpInputField(_controllers[2]),
-                                    _buildOtpInputField(_controllers[3]),
-                                  ],
-                                ),
 
               ],
                           ),
                         ),
                         SizedBox(height: 60),
                         GestureDetector(
-                          onTap: () => _sendOTP(context),
+                          onTap: resetPassword,
                           child: Container(
                             height: 50,
                             margin: EdgeInsets.symmetric(horizontal: 50),
@@ -159,36 +153,25 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       ),
     );
   }
-  Widget _buildOtpInputField(TextEditingController controller) {
-    return Container(
-      height: 50,
-      width: 50,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade600),
-        borderRadius: BorderRadius.circular(5),
-      ),
-      child: TextField(
-        controller: controller,
-        textAlign: TextAlign.center,
-        keyboardType: TextInputType.number,
-        maxLength: 1,
-        onChanged: (value) {
-          if (value.isNotEmpty) {
-            FocusScope.of(context).nextFocus();
-          } else {
-            FocusScope.of(context).previousFocus();
-          }
-        },
-        decoration: InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-        ),
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
+  Future<void> resetPassword() async {
+    showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Center(
+          child: CircularProgressIndicator(),
+        ));
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: emailController.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Password Reset Email Sent')));
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message ?? 'An error occurred')));
+    }
   }
-}
 
+
+}

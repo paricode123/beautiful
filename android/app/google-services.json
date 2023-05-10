@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1004787139291",
+    "project_id": "twelve-b83c7",
+    "storage_bucket": "twelve-b83c7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1004787139291:android:bb87845393569e782d82fe",
+        "android_client_info": {
+          "package_name": "com.example.tweelve"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1004787139291-q3vfpun2pt99m9cnf0n7j6g0l4h2t4pf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvO8MBr82mhV66-bYadPGr3mycW365bSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1004787139291-q3vfpun2pt99m9cnf0n7j6g0l4h2t4pf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
