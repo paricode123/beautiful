@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tweelve/main.dart';
 
+import 'my_gift.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
 
@@ -11,7 +13,8 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<Map<String, String>> nameList = [];
   List<String> loggedInUsers = [];
@@ -29,7 +32,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       setState(() {
         nameList.add({'name': name, 'serialNumber': '${nameList.length + 1}'});
         loggedInUsers.add(name);
-        _tabController = TabController(length: loggedInUsers.length, vsync: this);
+        _tabController =
+            TabController(length: loggedInUsers.length, vsync: this);
       });
     }
   }
@@ -83,7 +87,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                           child: CircleAvatar(
                             radius: 30.0,
                             backgroundImage:
-                            AssetImage('assets/images/avatar2.png'),
+                                AssetImage('assets/images/avatar2.png'),
                           ),
                         ),
                         SizedBox(width: 33.0),
@@ -115,71 +119,113 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                 child: Padding(
                   padding: EdgeInsets.all(10),
                   child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          Container(
-                            height: 550,
-                            child: Column(
-                              children: [
-                                TabBar(
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 550,
+                          child: Column(
+                            children: [
+                              TabBar(
+                                controller: _tabController,
+                                tabs: [
+                                  Tab(text: '1st List'),
+                                  Tab(text: '2nd List'),
+                                  Tab(text: '3rd List'),
+                                ],
+                              ),
+                              Expanded(
+                                child: TabBarView(
                                   controller: _tabController,
-                                  tabs: [
-                                    Tab(text: '1st List'),
-                                    Tab(text: '2nd List'),
-                                    Tab(text: '3rd List'),
+                                  children: [
+                                    ListView(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10.0, vertical: 15),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'SI No.',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red),
+                                              ),
+                                              Text(
+                                                'Name',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red),
+                                              ),
+                                              Text(
+                                                'Price / Table',
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.red),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Divider(
+                                          color: Colors.grey,
+                                          height: 1,
+                                          thickness: 1,
+                                        ),
+                                        SizedBox(
+                                          height: 20,
+                                        ),
+                                        ListView.builder(
+                                          shrinkWrap: true,
+                                          physics:
+                                              NeverScrollableScrollPhysics(),
+                                          itemCount: nameList.length,
+                                          itemBuilder: (context, index) {
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 35.0),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    '${nameList[index]['serialNumber']}.',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    nameList[index]['name']!,
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    '1000',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
                                   ],
                                 ),
-                                Expanded(
-                                  child: TabBarView(
-                                    controller: _tabController,
-                                    children: [
-                                      ListView(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 15),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                Text('SI No.',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
-                                                Text('Name',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
-                                                Text('Price / Table',style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold,color: Colors.red),),
-                                              ],
-                                            ),
-                                          ),
-                                          Divider(
-                                            color: Colors.grey,
-                                            height: 1,
-                                            thickness: 1,
-                                          ),
-                                          SizedBox(height: 20,),
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            physics: NeverScrollableScrollPhysics(),
-                                            itemCount: nameList.length,
-                                            itemBuilder: (context, index) {
-                                              return Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 35.0),
-                                                child: Row(
-                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                  children: [
-                                                    Text('${nameList[index]['serialNumber']}.', style: TextStyle(fontSize: 18,),),
-                                                    Text(nameList[index]['name']!, style: TextStyle(fontSize: 18,),),
-                                                    Text('1000', style: TextStyle(fontSize: 18,),),
-                                                  ],
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -187,6 +233,20 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MyRewards()),
+          );
+        },
+        child: Icon(Icons.card_giftcard),
+        backgroundColor: Colors.orangeAccent.shade400,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
